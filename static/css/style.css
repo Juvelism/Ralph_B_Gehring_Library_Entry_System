@@ -1,0 +1,44 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #812b1a, #b83c24);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.status {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.student {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.time {
+  margin-top: 10px;
+  font-size: 1rem;
+  opacity: 0.8;
+}
