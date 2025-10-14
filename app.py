@@ -1,8 +1,18 @@
 from flask import Flask, render_template, jsonify, request
+from flask_socketio import SocketIO
 import psycopg2
 import os
+import sys
+from flask import Response
+import csv
+from io import StringIO
+from datetime import datetime
+
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")  # allow browser connections
 
 # ---- Database Config ----
 DB = {
@@ -11,6 +21,7 @@ DB = {
     'user': os.environ.get('DB_USER', 'postgres'),
     'password': os.environ.get('DB_PASS', 'Vonlucille03')
 }
+
 
 API_KEY = os.environ.get('TAP_API_KEY', 'super-secret-token')
 
@@ -25,7 +36,27 @@ def get_conn():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT idnumber, firstname, middlename, lastname, time
+        FROM lst_student_attendance
+        ORDER BY time DESC
+        LIMIT 1
+    """)
+    latest = cur.fetchone()
+    conn.close()
+
+    if not latest:
+        # No attendance yet → show waiting screen
+        return render_template('index.html', status='waiting')
+
+    idnumber, firstname, middlename, lastname, time = latest
+    fullname = f"{firstname} {middlename or ''} {lastname or ''}".strip()
+
+    # Show latest student on the page
+    return render_template('index.html', status='success', fullname=fullname, idnumber=idnumber)
+
 
 @app.route("/api/latest")
 def latest():
@@ -55,6 +86,15 @@ def latest():
         "time": str(time)
     })
 
+@app.route("/api/status")
+def api_status():
+    if os.path.exists("last_status.txt"):
+        with open("last_status.txt", "r", encoding="utf-8") as f:
+            status = f.read().strip()
+        if status == "error":
+            os.remove("last_status.txt")
+            return jsonify({"status": "error"})
+    return jsonify({"status": "ok"})
 
 
 @app.route("/api/record", methods=["POST"])
@@ -65,11 +105,9 @@ def record_attendance():
     if not carduid:
         return jsonify({"status": "error", "message": "No CardUID sent"}), 400
 
-    # Connect to DB
     conn = get_conn()
     cur = conn.cursor()
 
-    # Check if card exists in lst_student
     cur.execute("""
         SELECT idnumber, firstname, middlename, lastname
         FROM lst_student
@@ -80,11 +118,17 @@ def record_attendance():
     if not student:
         conn.close()
         print(f"⚠️ Unknown card: {carduid}")
+
+        # 🔥 Send instant "unknown" update to browser
+        socketio.emit('new_attendance', {
+            'status': 'error',
+            'message': 'Card Not Registered'
+        })
+
         return jsonify({"status": "error", "message": "Unknown card"}), 404
 
     idnumber, firstname, middlename, lastname = student
 
-    # Insert attendance record
     cur.execute("""
         INSERT INTO lst_student_attendance (idnumber, carduid, firstname, middlename, lastname)
         VALUES (%s, %s, %s, %s, %s)
@@ -93,7 +137,14 @@ def record_attendance():
     conn.close()
 
     fullname = f"{firstname} {middlename or ''} {lastname or ''}".strip()
-    print(f"Attendance recorded for {fullname} ({idnumber})")
+    print(f"✅ Attendance recorded for {fullname} ({idnumber})")
+
+    # 🔥 Send instant "success" update
+    socketio.emit('new_attendance', {
+        'status': 'success',
+        'idnumber': idnumber,
+        'fullname': fullname
+    })
 
     return jsonify({
         "status": "success",
@@ -105,8 +156,37 @@ def record_attendance():
     }), 201
 
 
+@app.route("/download_attendance")
+def download_attendance():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT idnumber, firstname, middlename, lastname, time
+        FROM lst_student_attendance
+        ORDER BY time DESC
+    """)
+    rows = cur.fetchall()
+    conn.close()
 
+    from io import StringIO
+    import csv
+    from datetime import datetime
+    from flask import Response
 
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID Number', 'First Name', 'Middle Name', 'Last Name', 'Time In'])
+    writer.writerows(rows)
+    output.seek(0)
 
+    filename = f"attendance_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+# 👇 This line must come LAST
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
