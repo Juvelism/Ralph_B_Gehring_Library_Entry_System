@@ -3,39 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/css/style.css">
   <title>LST Theological Hour</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #00ff99;
-      font-family: 'Consolas', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      text-align: center;
-    }
-    h1 { font-size: 3.5rem; margin: 0; }
-    h2 { font-size: 3.2rem; margin: 10px 0; }
-    h3 { font-size: 1.8rem; margin: 10px 0; color: white; }
-    .waiting { color: #ffaa00; }
-    .blink {
-      animation: blink 1.2s infinite;
-    }
-    @keyframes blink {
-      0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0.3; }
-    }
-    .success { color: #00ff00; }
-  </style>
+  
 </head>
 <body>
   <div id="display">
-    <h1>LST THEOLOGICAL HOUR</h1>
+    <h1>Fr. Ralph B. Gehring Libray</h1>
     <h2 class="waiting blink">💳 Waiting for Card Tap...</h2>
-    <h3>📚 Student Attendance System</h3>
+    <h3>Library Entry System</h3>
   </div>
 
   <div style="position: fixed; bottom: 20px; right: 20px;">
@@ -47,42 +23,6 @@
 </div>
 
 
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script>
-  const socket = io();
-  const disp = document.getElementById('display');
-
-  function showWaiting() {
-    disp.innerHTML = `
-      <h1>LST THEOLOGICAL HOUR</h1>
-      <h2 class="waiting blink">💳 Waiting for Card Tap...</h2>
-      <h3>📚 Student Attendance System</h3>
-    `;
-  }
-
-  socket.on('new_attendance', (data) => {
-    if (data.status === 'success') {
-      disp.innerHTML = `
-        <h1>LST THEOLOGICAL HOUR</h1>
-        <h2>🎉 Welcome </h2>
-        <h2 class="waiting"> ${data.fullname}</h2>
-        <h2 class="waiting"> ${data.idnumber}</h2>
-        <h3 class="success">Attendance Recorded Successfully ✅</h3>
-      `;
-      setTimeout(showWaiting, 4000);
-    }
-
-    else if (data.status === 'error') {
-      disp.innerHTML = `
-        <h1>❌ LST THEOLOGICAL HOUR</h1>
-        <h2 style="color:#ff4444;">Card Not Registered!</h2>
-        <h3>Please go to the I.T. Office for registration.</h3>
-      `;
-      setTimeout(showWaiting, 4000);
-    }
-  });
-
-  showWaiting();
-</script>
+<script src="/static/js/script.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")  # allow browser connections
 # ---- Database Config ----
 DB = {
     'host': os.environ.get('DB_HOST', 'localhost'),
-    'dbname': os.environ.get('DB_NAME', 'theo_hour_attendance'),
+    'dbname': os.environ.get('DB_NAME', 'ralph_b_gehring_library_entry'),
     'user': os.environ.get('DB_USER', 'postgres'),
     'password': os.environ.get('DB_PASS', 'Vonlucille03')
 }
@@ -189,4 +189,4 @@ def download_attendance():
 
 # 👇 This line must come LAST
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=9000, debug=True)
