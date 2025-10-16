@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fr. Ralph B. Gehring Library</title>
-
-  <!-- Link external CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
@@ -18,10 +16,42 @@
 
   <a href="/download_attendance" class="download-btn">⬇️ Download CSV</a>
 
-  <!-- Socket.IO -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-  <!-- Link external JS -->
   <script src="{{ url_for('static', filename='js/display.js') }}" defer></script>
 </body>
 </html>
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fr. Ralph B. Gehring Library</title>-->
+
+  <!-- Link external CSS
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head> -->
+ <!--
+<body>
+  <div id="display">
+    <h1>Fr. Ralph B. Gehring Library</h1>
+    <h2 class="waiting blink">💳 Waiting for Card Tap...</h2>
+    <h3>Library Entry System</h3>
+  </div>-->
+ <!--
+  <a href="/download_attendance" class="download-btn">⬇️ Download CSV</a>
+
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+
+  <script src="{{ url_for('static', filename='js/display.js') }}" defer></script>
+</body>
+</html>
+-->

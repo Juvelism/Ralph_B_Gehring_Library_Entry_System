@@ -1,4 +1,114 @@
 body {
+  position: relative;
+  background-color: #812b1a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* 👇 background image layer */
+body::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 400px;          /* adjust size */
+  background: url("../images/library.jpg") no-repeat bottom right;
+  background-size: contain;
+  opacity: 0.3;          /* 👈 adjust transparency (0.1 to 1) */
+  pointer-events: none;  /* ensures clicks pass through */
+}
+
+/* Glass-style main display box */
+#display {
+  background: rgba(255, 255, 255, 0.12);
+
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 40px 80px;
+  text-align: center;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  width: 80%;
+  max-width: 800px;
+  animation: glow 4s infinite alternate;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  color: #ffcc66;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: 2.2rem;
+  margin: 15px 0;
+}
+
+h3 {
+  font-size: 1.4rem;
+  color: #f1f1f1;
+  margin-top: 10px;
+}
+
+.waiting {
+  color: #ffd966;
+}
+
+.success {
+  color: #7CFC00;
+}
+
+.error {
+  color: #ff6666;
+}
+
+.blink {
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.4; }
+}
+
+/* Download Button */
+.download-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ffcc66;
+  color: #812b1a;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+  background-color: #ffe08a;
+  transform: scale(1.05);
+}
+
+/* Glow effect for kiosk box */
+@keyframes glow {
+  from { box-shadow: 0 0 20px rgba(255, 204, 102, 0.3); }
+  to { box-shadow: 0 0 40px rgba(255, 204, 102, 0.6); }
+}
+
+
+
+
+
+/** body {
   background-color: #000;
   color: #00ff99;
   font-family: 'Consolas', monospace;
@@ -27,7 +137,6 @@ h3 { font-size: 1.8rem; margin: 10px 0; color: white; }
   25%, 75% { opacity: 0.3; }
 }
 
-/* Download Button */
 .download-btn {
   position: fixed;
   bottom: 20px;
@@ -44,3 +153,5 @@ h3 { font-size: 1.8rem; margin: 10px 0; color: white; }
 .download-btn:hover {
   background-color: #00cc77;
 }
+
+*/
