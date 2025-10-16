@@ -1,6 +1,9 @@
 body {
-  position: relative;
   background-color: #812b1a;
+  background-image: url("../images/library2.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   align-items: center;
@@ -8,26 +11,11 @@ body {
   height: 100vh;
   margin: 0;
   color: #fff;
-  overflow: hidden;
-}
-
-/* 👇 background image layer */
-body::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 400px;          /* adjust size */
-  background: url("../images/library.jpg") no-repeat bottom right;
-  background-size: contain;
-  opacity: 0.3;          /* 👈 adjust transparency (0.1 to 1) */
-  pointer-events: none;  /* ensures clicks pass through */
 }
 
 /* Glass-style main display box */
 #display {
   background: rgba(255, 255, 255, 0.12);
-
   border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 16px;
   padding: 40px 80px;
@@ -40,8 +28,8 @@ body::after {
 }
 
 h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: 4rem;
+  margin-bottom: 5rem;
   color: #ffcc66;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -50,6 +38,7 @@ h1 {
 h2 {
   font-size: 2.2rem;
   margin: 15px 0;
+    margin-bottom: 5rem;
 }
 
 h3 {

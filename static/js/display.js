@@ -4,7 +4,7 @@ const disp = document.getElementById('display');
 function showWaiting() {
   disp.innerHTML = `
     <h1>Fr. Ralph B. Gehring Library</h1>
-    <h2 class="waiting blink">💳 Waiting for Card Tap...</h2>
+    <h2 class="waiting blink">💳 Please Tap Your LST ID Card...</h2>
     <h3>Library Entry System</h3>
   `;
 }
