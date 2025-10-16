@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/static/css/style.css">
-  <title>LST Theological Hour</title>
-  
+  <title>Fr. Ralph B. Gehring Library</title>
+
+  <!-- Link external CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
   <div id="display">
-    <h1>Fr. Ralph B. Gehring Libray</h1>
+    <h1>Fr. Ralph B. Gehring Library</h1>
     <h2 class="waiting blink">💳 Waiting for Card Tap...</h2>
     <h3>Library Entry System</h3>
   </div>
 
-  <div style="position: fixed; bottom: 20px; right: 20px;">
-  <a href="/download_attendance" 
-     style="background-color: #00ff99; color: #000; padding: 10px 20px; 
-            border-radius: 8px; font-weight: bold; text-decoration: none;">
-    ⬇️ Download CSV
-  </a>
-</div>
+  <a href="/download_attendance" class="download-btn">⬇️ Download CSV</a>
 
+  <!-- Socket.IO -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-<script src="/static/js/script.js"></script>
+  <!-- Link external JS -->
+  <script src="{{ url_for('static', filename='js/display.js') }}" defer></script>
 </body>
 </html>

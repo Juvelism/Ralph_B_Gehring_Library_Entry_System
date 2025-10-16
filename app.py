@@ -139,7 +139,6 @@ def record_attendance():
     fullname = f"{firstname} {middlename or ''} {lastname or ''}".strip()
     print(f"✅ Attendance recorded for {fullname} ({idnumber})")
 
-    # 🔥 Send instant "success" update
     socketio.emit('new_attendance', {
         'status': 'success',
         'idnumber': idnumber,
@@ -187,6 +186,5 @@ def download_attendance():
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-# 👇 This line must come LAST
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=9000, debug=True)
