@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin.css') }}"
+    />
+  </head>
+  <body>
+    <body>
+      <div class="dashboard-container">
+        <div class="dashboard-box">
+          <div class="header">
+            <h1>📚 Student Management</h1>
+            <a href="/logout" class="logout-btn">🚪 Logout</a>
+          </div>
+
+          <div class="content">
+            <!-- LEFT SIDE: Add Student Form -->
+            <div class="form-section">
+              <h2>➕ Add New Student</h2>
+              <form action="/add_student" method="POST" class="add-form">
+                <input
+                  type="text"
+                  name="idnumber"
+                  placeholder="ID Number"
+                  required
+                />
+                <input type="text" name="carduid" placeholder="Card UID" />
+                <input
+                  type="text"
+                  name="firstname"
+                  placeholder="First Name"
+                  required
+                />
+                <input
+                  type="text"
+                  name="middlename"
+                  placeholder="Middle Name"
+                />
+                <input
+                  type="text"
+                  name="lastname"
+                  placeholder="Last Name"
+                  required
+                />
+                <button type="submit">Add Student</button>
+              </form>
+            </div>
+
+            <!-- RIGHT SIDE: Student Table -->
+            <div class="table-section">
+              <h2>📋 Current Students</h2>
+
+              <!-- Search Form -->
+              <form method="GET" action="/dashboard" class="search-form">
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Search by name, ID, or card UID"
+                  value="{{ search_query }}"
+                />
+                <button type="submit">🔍 Search</button>
+              </form>
+
+              
+
+              <table>
+                <tr>
+                  <th>ID Number</th>
+                  <th>Card UID</th>
+                  <th>Full Name</th>
+                  <th>Actions</th>
+                </tr>
+                {% for s in students %}
+                <tr>
+                  <td>{{ s[0] }}</td>
+                  <td>{{ s[1] or '—' }}</td>
+                  <td>{{ s[2] }} {{ s[3] or '' }} {{ s[4] }}</td>
+                  <td>
+                    <a href="/edit_student/{{ s[0] }}" class="edit-btn"
+                      >✏️ Edit</a
+                    >
+                  </td>
+                </tr>
+                {% endfor %}
+              </table>
+              <div class="pagination">
+                {% if page > 1 %}
+                <a
+                  href="/dashboard?page={{ page - 1 }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                  class="page-btn"
+                  >⬅ Prev</a
+                >
+                {% endif %}
+                <span>Page {{ page }} of {{ total_pages }}</span>
+                {% if page < total_pages %}
+                <a
+                  href="/dashboard?page={{ page + 1 }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                  class="page-btn"
+                  >Next ➡</a
+                >
+                {% endif %}
+              </div>
+              {% if search_query %}
+              <div class="back-section">
+                <a href="/dashboard" class="back-btn">⬅ Back to All Students</a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </body>
+</html>

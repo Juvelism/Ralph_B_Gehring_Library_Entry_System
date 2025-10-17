@@ -9,10 +9,19 @@ from io import StringIO
 from datetime import datetime
 
 
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_session import Session
+
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")  # allow browser connections
+app.secret_key = "super-secret-key"
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
+
 
 # ---- Database Config ----
 DB = {
@@ -25,6 +34,7 @@ DB = {
 
 API_KEY = os.environ.get('TAP_API_KEY', 'super-secret-token')
 
+
 def get_conn():
     return psycopg2.connect(
         host=DB["host"],
@@ -33,6 +43,7 @@ def get_conn():
         password=DB["password"],
         options='-c client_encoding=UTF8'
     )
+
 
 @app.route('/')
 def index():
@@ -85,6 +96,7 @@ def latest():
         "fullname": fullname,
         "time": str(time)
     })
+
 
 @app.route("/api/status")
 def api_status():
@@ -174,7 +186,8 @@ def download_attendance():
 
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID Number', 'First Name', 'Middle Name', 'Last Name', 'Time In'])
+    writer.writerow(['ID Number', 'First Name',
+                    'Middle Name', 'Last Name', 'Time In'])
     writer.writerows(rows)
     output.seek(0)
 
@@ -185,6 +198,170 @@ def download_attendance():
         mimetype="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+# --- ADMIN LOGIN PAGE ---
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT password FROM lst_admin WHERE admin_name = %s", (username,))
+        admin = cur.fetchone()
+        conn.close()
+
+        if admin and password == admin[0]:
+            session['admin'] = username
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid username or password', 'error')
+            return redirect(url_for('admin_login'))
+
+    return render_template('login.html')
+
+
+# --- DASHBOARD PAGE ---
+@app.route('/dashboard')
+def dashboard():
+    if 'admin' not in session:
+        return redirect(url_for('admin_login'))
+
+    search_query = request.args.get('search', '').strip()
+    page = request.args.get('page', 1, type=int)
+    limit = 15
+    offset = (page - 1) * limit
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    # --- If search query is active ---
+    if search_query:
+        cur.execute("""
+            SELECT idnumber, carduid, firstname, middlename, lastname
+            FROM lst_student
+            WHERE idnumber ILIKE %s
+               OR firstname ILIKE %s
+               OR middlename ILIKE %s
+               OR lastname ILIKE %s
+            ORDER BY idnumber ASC
+            LIMIT %s OFFSET %s
+        """, (
+            f"%{search_query}%", f"%{search_query}%", f"%{search_query}%", f"%{search_query}%", limit, offset
+        ))
+        students = cur.fetchall()
+
+        # 🔹 new cursor for count query
+        cur2 = conn.cursor()
+        cur2.execute("""
+            SELECT COUNT(*) FROM lst_student
+            WHERE idnumber ILIKE %s
+               OR firstname ILIKE %s
+               OR middlename ILIKE %s
+               OR lastname ILIKE %s
+        """, (f"%{search_query}%", f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"))
+        total_students = cur2.fetchone()[0]
+        cur2.close()
+    else:
+        cur.execute("""
+            SELECT idnumber, carduid, firstname, middlename, lastname
+            FROM lst_student
+            ORDER BY idnumber ASC
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
+        students = cur.fetchall()
+
+        cur2 = conn.cursor()
+        cur2.execute("SELECT COUNT(*) FROM lst_student")
+        total_students = cur2.fetchone()[0]
+        cur2.close()
+
+    conn.close()
+
+    total_pages = (total_students + limit - 1) // limit
+
+    return render_template(
+        'dashboard.html',
+        students=students,
+        page=page,
+        total_pages=total_pages,
+        search_query=search_query
+    )
+
+
+# --- ADD STUDENT ---
+@app.route('/add_student', methods=['POST'])
+def add_student():
+    if 'admin' not in session:
+        return redirect(url_for('admin_login'))
+
+    idnumber = request.form['idnumber']
+    carduid = request.form['carduid']
+    firstname = request.form['firstname']
+    middlename = request.form['middlename']
+    lastname = request.form['lastname']
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO lst_student (idnumber, carduid, firstname, middlename, lastname)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (idnumber, carduid, firstname, middlename, lastname))
+    conn.commit()
+    conn.close()
+
+    flash('Student added successfully!', 'success')
+    return redirect(url_for('dashboard'))
+
+# --- EDIT STUDENT ---
+
+
+@app.route('/edit_student/<idnumber>', methods=['GET', 'POST'])
+def edit_student(idnumber):
+    if 'admin' not in session:
+        return redirect(url_for('admin_login'))
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        carduid = request.form['carduid']
+        firstname = request.form['firstname']
+        middlename = request.form['middlename']
+        lastname = request.form['lastname']
+
+        cur.execute("""
+            UPDATE lst_student
+            SET carduid = %s, firstname = %s, middlename = %s, lastname = %s
+            WHERE idnumber = %s
+        """, (carduid, firstname, middlename, lastname, idnumber))
+        conn.commit()
+        conn.close()
+
+        flash('Student record updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    # GET request: show the edit form
+    cur.execute("""
+        SELECT idnumber, carduid, firstname, middlename, lastname
+        FROM lst_student
+        WHERE idnumber = %s
+    """, (idnumber,))
+    student = cur.fetchone()
+    conn.close()
+
+    return render_template('edit_student.html', student=student)
+
+
+# --- LOGOUT ---
+@app.route('/logout')
+def logout():
+    session.pop('admin', None)
+    return redirect(url_for('admin_login'))
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=9000, debug=True)
